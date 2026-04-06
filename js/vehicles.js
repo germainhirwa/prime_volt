@@ -209,6 +209,8 @@ function setupCardImageSlider(card, vehicle) {
 
 /* --- Vehicle Modal --- */
 let currentModalSlide = 0;
+let is360Mode = false;
+let angleViewer = null;
 
 function openVehicleModal(vehicleId) {
   const vehicle = vehicleData.find(v => v.id === vehicleId);
@@ -225,6 +227,32 @@ function openVehicleModal(vehicleId) {
   const whatsappBtn = document.getElementById('modal-whatsapp-btn');
   const inquireBtn = document.getElementById('modal-inquire-btn');
 
+  // New UI Elements for 360
+  if (!document.getElementById('modal-view-toggle')) {
+    const galleryContainer = document.getElementById('modal-gallery');
+    const toggle = document.createElement('div');
+    toggle.id = 'modal-view-toggle';
+    toggle.className = 'modal-view-toggle';
+    toggle.innerHTML = `
+      <button class="toggle-btn active" id="btn-gallery">Gallery</button>
+      <button class="toggle-btn" id="btn-360">360° Explore</button>
+    `;
+    galleryContainer.appendChild(toggle);
+
+    const hint = document.createElement('div');
+    hint.id = 'modal-360-hint';
+    hint.className = 'modal-360-hint';
+    hint.innerHTML = `<div>↔ Drag to Rotate</div>`;
+    galleryContainer.appendChild(hint);
+
+    // Toggle Listeners
+    document.getElementById('btn-gallery').onclick = () => setViewMode('gallery');
+    document.getElementById('btn-360').onclick = () => setViewMode('360');
+  }
+
+  // Reset view mode to gallery
+  setViewMode('gallery');
+
   // Gallery
   track.innerHTML = vehicle.images.map(img => `
     <div class="modal-gallery-slide">
@@ -238,14 +266,16 @@ function openVehicleModal(vehicleId) {
 
   currentModalSlide = 0;
   updateModalGallery();
+  
+  // Setup 360
+  setup360(vehicle.images);
 
-  // Info
+  // Info... (rest of existing code)
   title.textContent = vehicle.name;
   type.textContent = vehicle.type;
   desc.textContent = vehicle.description;
   price.innerHTML = `<span class="currency">${vehicle.priceNote}</span> ${vehicle.price}`;
 
-  // Specs grid
   const specItems = [
     { icon: '🔋', value: vehicle.specs.range, label: 'Range' },
     { icon: '⚡', value: vehicle.specs.power, label: 'Power' },
@@ -265,25 +295,95 @@ function openVehicleModal(vehicleId) {
     </div>
   `).join('');
 
-  // WhatsApp link
   const waMessage = encodeURIComponent(`Hello Prime Volt! I'm interested in the ${vehicle.name} (${vehicle.type}). Can I get more details?`);
   whatsappBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`;
 
-  // Inquire button closes modal and scrolls to contact
   inquireBtn.onclick = (e) => {
     e.preventDefault();
     closeVehicleModal();
-    // Pre-select model in form
     const modelSelect = document.getElementById('form-model');
-    if (modelSelect) {
-      modelSelect.value = vehicle.name;
-    }
+    if (modelSelect) modelSelect.value = vehicle.name;
     document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Show modal
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+}
+
+function setViewMode(mode) {
+  is360Mode = (mode === '360');
+  const gallery = document.getElementById('modal-gallery');
+  const btnGallery = document.getElementById('btn-gallery');
+  const btn360 = document.getElementById('btn-360');
+  const hint = document.getElementById('modal-360-hint');
+  const nav = document.querySelectorAll('.modal-gallery-nav');
+  const dots = document.getElementById('modal-gallery-dots');
+
+  if (is360Mode) {
+    btn360.classList.add('active');
+    btnGallery.classList.remove('active');
+    gallery.classList.add('mode-360');
+    hint.classList.add('active');
+    nav.forEach(n => n.style.display = 'none');
+    dots.style.display = 'none';
+  } else {
+    btnGallery.classList.add('active');
+    btn360.classList.remove('active');
+    gallery.classList.remove('mode-360');
+    hint.classList.remove('active');
+    nav.forEach(n => n.style.display = 'flex');
+    dots.style.display = 'flex';
+  }
+}
+
+/* --- 360 Viewer Logic --- */
+function setup360(images) {
+  const track = document.getElementById('modal-gallery-track');
+  let startX = 0;
+  let isDragging = false;
+  let sensitivity = 80; // pixels to move to next angle
+
+  track.onmousedown = (e) => {
+    if (!is360Mode) return;
+    startX = e.clientX;
+    isDragging = true;
+    e.preventDefault();
+  };
+
+  window.onmousemove = (e) => {
+    if (!isDragging || !is360Mode) return;
+    const diff = e.clientX - startX;
+    if (Math.abs(diff) > sensitivity) {
+      if (diff > 0) prevModalSlide();
+      else nextModalSlide();
+      startX = e.clientX;
+    }
+  };
+
+  window.onmouseup = () => {
+    isDragging = false;
+  };
+
+  // Touch support
+  track.ontouchstart = (e) => {
+    if (!is360Mode) return;
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  };
+
+  track.ontouchmove = (e) => {
+    if (!isDragging || !is360Mode) return;
+    const diff = e.touches[0].clientX - startX;
+    if (Math.abs(diff) > sensitivity / 2) {
+      if (diff > 0) prevModalSlide();
+      else nextModalSlide();
+      startX = e.touches[0].clientX;
+    }
+  };
+
+  track.ontouchend = () => {
+    isDragging = false;
+  };
 }
 
 function closeVehicleModal() {

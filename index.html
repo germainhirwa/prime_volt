@@ -24,6 +24,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Prime Volt — Electric Vehicles Rwanda">
   <meta name="twitter:description" content="Premium electric vehicles imported directly to Rwanda.">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="images/logo.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="images/logo.png">
@@ -238,6 +241,72 @@
           <h3 class="step-title">Drive</h3>
           <p class="step-desc">We handle import, registration, and delivery. Your new EV arrives at your doorstep in
             Kigali.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SAVINGS CALCULATOR ===== -->
+  <section class="calculator-section section-padding" id="savings">
+    <div class="container">
+      <div class="calculator-grid">
+        <div class="calculator-content reveal-left">
+          <span class="section-label">Cost Comparison</span>
+          <h2 class="section-title">Calculate Your <span class="text-gradient">EV Savings</span></h2>
+          <p class="section-subtitle">See how much you'll save by switching from a petrol SUV to a Prime Volt EV based on
+            current Rwandan prices.</p>
+
+          <div class="calc-inputs">
+            <div class="calc-group">
+              <div class="calc-header">
+                <label class="form-label" for="range-mileage">Monthly Mileage</label>
+                <div class="calc-value-display"><span id="display-mileage">1,500</span> km</div>
+              </div>
+              <input type="range" class="calc-slider" id="range-mileage" min="500" max="5000" step="100" value="1500">
+              <div class="calc-markers">
+                <span>500 km</span>
+                <span>5,000 km</span>
+              </div>
+            </div>
+
+            <div class="calc-rates">
+              <div class="calc-rate-item">
+                <span class="label">Petrol Price</span>
+                <span class="value">1,829 RWF/L</span>
+              </div>
+              <div class="calc-rate-item">
+                <span class="label">Electric Rate</span>
+                <span class="value">320 RWF/kWh</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calculator-result reveal-right">
+          <div class="result-card">
+            <div class="result-header">Your Estimated Savings</div>
+
+            <div class="result-stats">
+              <div class="result-item">
+                <div class="result-label">Annual Petrol Cost</div>
+                <div class="result-value petrol" id="petrol-year">RWF 0</div>
+              </div>
+              <div class="result-item">
+                <div class="result-label">Annual Electric Cost</div>
+                <div class="result-value electric" id="ev-year">RWF 0</div>
+              </div>
+            </div>
+
+            <div class="result-total">
+              <div class="total-label">Net Annual Savings</div>
+              <div class="total-value" id="total-savings">RWF 0</div>
+              <div class="total-monthly">That's <span id="monthly-savings">RWF 0</span> per month!</div>
+            </div>
+
+            <div class="result-action">
+              <a href="#contact" class="btn btn-primary btn-block">Start Saving Today</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -466,7 +535,7 @@
 
   <!-- ===== FLOATING WHATSAPP ===== -->
   <div class="whatsapp-float" id="whatsapp-float">
-    <a href="https://wa.me/250780000000?text=Hello%20Prime%20Volt!%20I'm%20interested%20in%20your%20electric%20vehicles."
+    <a href="https://wa.me/250788447848?text=Hello%20Prime%20Volt!%20I'm%20interested%20in%20your%20electric%20vehicles."
       class="whatsapp-btn" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" id="whatsapp-cta">
       <svg viewBox="0 0 24 24">
         <path
@@ -517,7 +586,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
   <!-- App Scripts -->
+  <!-- PWA Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker error:', err));
+      });
+    }
+  </script>
+
   <script src="js/vehicles.js"></script>
+  <script src="js/calculator.js"></script>
   <script src="js/forms.js"></script>
   <script src="js/main.js"></script>
 </body>
